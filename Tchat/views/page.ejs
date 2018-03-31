@@ -1,0 +1,119 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>IndieBaie</title>
+    <meta charset="utf-8">
+    <script src="/js/jquery-3.3.1.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed|Roboto|Leckerli+One|IBM+Plex+Mono|Allan" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <script src="/js/main.js"></script>
+
+    <link href="/css/styles.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+<header>
+    <div class="conteneur space-between">
+        <h1 class="col-12 sm-4"><span style="color:#18dcff">Indie</span> Baie</h1>
+        <div class="col-12 sm-4 text-center">
+            <i style="color:#18dcff" class="fa fa-facebook-square"></i>
+            <i style="color:#18dcff" class="fa fa-twitter-square"></i>
+        </div>
+        <ul id="nav" class="col-12 sm-4">
+            <li>Accueil</li>
+            <li>Jeux</li>
+            <li>Contact</li>
+        </ul>
+    </div>
+</header>
+
+<section id="main-img">
+</section>
+
+<section id="content">
+    <div class="conteneur no-padding">
+        <img src="/images/planet-2120004_1280.jpg">
+	<button type="button" id="change">Changer de Pseudo</button>
+    </div>
+    <div class="conteneur bg-dark">
+        <h2>Le tchat crée par le mec le plus cool</h2>
+    </div>
+    <div>
+
+    </div>
+    <div class="conteneur bg-dark no-padding">
+        <div class="col-4">
+            <div class="card bg-gray" id="King">
+                <img src="/images/KING.png">
+                <p class="desc">Envoyer un message au King StevenK</p>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card bg-gray" id="PD">
+                <img src="/images/PD.png" alt="Unable to load PD.png">
+                <p class="desc" id="PD">Envoyer un message au 2K</p>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card bg-gray" id="FL">
+                <img src="/images/FL.png">
+                <p class="desc" id="FL">Envoyer un message au 99 bosselé</p>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+<script>
+    function remplir (div, data) {
+        var text = "";
+        console.log(data);
+        for (var i = data.length - 1; i >= Math.max(0, data.length - 15); i--) {
+            text = text + "<p>" + "<span style='color: black'>" +  data[i]["pseudo"] + " : " + "</span><span style='color: red'>" + data[i]["message"] + "</span>" + "</p>";
+        }
+        div.append(text);
+    }
+</script>
+<script>
+    var socket = io.connect("https://www.indiebaie.fr");
+
+    var pseudo = ""
+    var pseudoStored = localStorage['user'];
+    if (pseudoStored && pseudoStored !== null) pseudo = pseudoStored;
+    else {
+	while (pseudo === "") pseudo = prompt("Choissisez un pseudo");
+        localStorage['user'] = pseudo;
+    }
+    document.title = "Bonjour " + pseudo + " - " + document.title;
+
+    $("#change").click(function () {
+        newPseudo = prompt("Choissisez un pseudo");
+	if (newPseudo !== null) pseudo = newPseudo;
+        localStorage['user'] = pseudo;	
+	document.title = "Bonjour " + pseudo + " - " + document.title;
+    });
+
+    $(".card").click(function () {
+        var dest = $(this).attr("id");
+        var message = prompt("Entrez votre message : " + dest);
+        if (message !== null) socket.emit("messageTo" + dest, {pseudo: pseudo, message: message});
+    });
+
+    socket.on("contentKing", function (data) {
+        $("#King p").not(".desc").remove();
+        remplir($("#King"), data);
+    });
+    socket.on("contentPD", function (data) {
+        $("#PD p").not(".desc").remove();
+        remplir($("#PD"), data);
+    });
+    socket.on("contentFL", function (data) {
+        $("#FL p").not(".desc").remove();
+        remplir($("#FL"), data);
+    });
+
+</script>
+</html>
